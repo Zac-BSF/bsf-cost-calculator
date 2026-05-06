@@ -417,6 +417,8 @@ const SPECIES = {
     name: "Pink Salmon",
     arrival: "H&G, Ungraded (2 lb+)",
     finish: "Skin-On, Boneless",
+    rawNote: "H&G protein cost, fully burdened, delivered Jacksonville FL. This is your all-in landed cost before any processing.",
+    yieldLabel: "Overall Yield (H&G → Portion)",
     defaultRaw: 2.25,
     steps: [
       { name: "Thaw",                             yield: 98,   cost: 0.10, note: "" },
@@ -434,6 +436,8 @@ const SPECIES = {
     name: "Pacific Cod",
     arrival: "IQF Fillets, Skinless Boneless",
     finish: "Skinless, Boneless",
+    rawNote: "IQF fillet cost, fully burdened, delivered Jacksonville FL. This is your all-in landed cost before any processing.",
+    yieldLabel: "Overall Yield (IQF Fillet → Portion)",
     defaultRaw: 8.25,
     steps: [
       { name: "Thaw",                             yield: 97,   cost: 0.10, note: "" },
@@ -450,6 +454,8 @@ const SPECIES = {
     name: "Sablefish",
     arrival: "H&G, Collar Bone Off (J-Cut, 4-5 lb)",
     finish: "Skin-On, Boneless",
+    rawNote: "H&G protein cost, fully burdened, delivered Jacksonville FL. This is your all-in landed cost before any processing.",
+    yieldLabel: "Overall Yield (H&G → Portion)",
     defaultRaw: 4.63,
     steps: [
       { name: "Thaw",                             yield: 98,   cost: 0.10, note: "" },
@@ -467,6 +473,8 @@ const SPECIES = {
     name: "Sockeye Salmon",
     arrival: "H&G (2 lb+)",
     finish: "Skin-On, Boneless",
+    rawNote: "H&G protein cost, fully burdened, delivered Jacksonville FL. This is your all-in landed cost before any processing.",
+    yieldLabel: "Overall Yield (H&G → Portion)",
     defaultRaw: 5.45,
     steps: [
       { name: "Thaw",                             yield: 98,   cost: 0.10, note: "" },
@@ -509,7 +517,7 @@ function buildPanel(key, sp) {
         Step 0 — Raw Material Cost
         <span class="badge badge-input">Customer Input</span>
       </h3>
-      <div class="note">H&G protein cost, fully burdened, delivered Jacksonville FL. This is your all-in landed cost before any processing.</div>
+      <div class="note">${sp.rawNote}</div>
       <div class="raw-material-input">
         <span class="dollar">$</span>
         <input type="text" inputmode="decimal" value="${sp.defaultRaw.toFixed(2)}" id="raw-${id}" oninput="recalc('${id}')" onblur="formatRaw('${id}')">
@@ -536,7 +544,7 @@ function buildPanel(key, sp) {
         <div class="detail">4 trays = 2 lbs net</div>
       </div>
       <div class="summary-card">
-        <div class="label">Overall Yield (H&G → Portion)</div>
+        <div class="label">${sp.yieldLabel}</div>
         <div class="value" id="overall-yield-${id}">—</div>
         <div class="overall-yield-bar"><div class="fill" id="yield-bar-${id}"></div></div>
       </div>
