@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BSF Seafood — Portioning Cost Calculator</title>
+<style>
+  :root {
+    --navy: #1a2744;
+    --navy-light: #2a3d5e;
+    --blue: #3b82f6;
+    --blue-light: #dbeafe;
+    --gold: #f59e0b;
+    --gold-light: #fef3c7;
+    --green: #059669;
+    --green-light: #d1fae5;
+    --gray-50: #f9fafb;
+    --gray-100: #f3f4f6;
+    --gray-200: #e5e7eb;
+    --gray-300: #d1d5db;
+    --gray-400: #9ca3af;
+    --gray-600: #4b5563;
+    --gray-700: #374151;
+    --gray-800: #1f2937;
+    --red: #dc2626;
+    --red-light: #fee2e2;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--gray-100);
+    color: var(--gray-800);
+    line-height: 1.5;
+  }
+
+  header {
+    background: var(--navy);
+    color: white;
+    padding: 20px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  header h1 {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+  }
+
+  header .subtitle {
+    font-size: 13px;
+    color: var(--gray-300);
+    font-weight: 400;
+  }
+
+  .header-right {
+    text-align: right;
+    font-size: 12px;
+    color: var(--gray-400);
+  }
+
+  .tabs {
+    display: flex;
+    background: var(--navy-light);
+    padding: 0 24px;
+    gap: 2px;
+    overflow-x: auto;
+  }
+
+  .tab {
+    padding: 12px 24px;
+    color: var(--gray-300);
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    border-bottom: 3px solid transparent;
+    transition: all 0.15s;
+    white-space: nowrap;
+    user-select: none;
+  }
+
+  .tab:hover { color: white; background: rgba(255,255,255,0.05); }
+  .tab.active {
+    color: white;
+    border-bottom-color: var(--gold);
+    background: rgba(255,255,255,0.08);
+  }
+
+  .container { max-width: 1100px; margin: 0 auto; padding: 24px; }
+
+  .species-header {
+    background: white;
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin-bottom: 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .species-header h2 { font-size: 20px; color: var(--navy); }
+  .species-header .spec {
+    font-size: 13px;
+    color: var(--gray-600);
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+
+  .spec span { display: inline-flex; align-items: center; gap: 4px; }
+  .spec .label { font-weight: 600; color: var(--gray-700); }
+
+  .raw-material-card {
+    background: linear-gradient(135deg, var(--gold-light), #fffbeb);
+    border: 2px solid var(--gold);
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin-bottom: 16px;
+  }
+
+  .raw-material-card h3 {
+    font-size: 15px;
+    color: var(--gray-800);
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .raw-material-card .note {
+    font-size: 12px;
+    color: var(--gray-600);
+    margin-bottom: 12px;
+  }
+
+  .raw-material-input {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .raw-material-input .dollar { font-size: 24px; font-weight: 700; color: var(--gray-700); }
+  .raw-material-input input {
+    font-size: 28px;
+    font-weight: 700;
+    width: 140px;
+    padding: 6px 12px;
+    border: 2px solid var(--gold);
+    border-radius: 8px;
+    background: white;
+    color: var(--navy);
+    text-align: center;
+    outline: none;
+  }
+  .raw-material-input input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px var(--blue-light); }
+  .raw-material-input .unit { font-size: 16px; color: var(--gray-600); font-weight: 500; }
+
+  .table-card {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+
+  .table-card h3 {
+    padding: 14px 20px;
+    font-size: 14px;
+    color: var(--gray-700);
+    background: var(--gray-50);
+    border-bottom: 1px solid var(--gray-200);
+  }
+
+  table { width: 100%; border-collapse: collapse; }
+
+  th {
+    text-align: left;
+    padding: 10px 14px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--gray-400);
+    background: var(--gray-50);
+    border-bottom: 1px solid var(--gray-200);
+  }
+
+  th.right, td.right { text-align: right; }
+  th.center, td.center { text-align: center; }
+
+  td {
+    padding: 10px 14px;
+    font-size: 14px;
+    border-bottom: 1px solid var(--gray-100);
+    vertical-align: middle;
+  }
+
+  tr:last-child td { border-bottom: none; }
+
+  tr.step-row:hover { background: var(--gray-50); }
+
+  .step-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--blue-light);
+    color: var(--blue);
+    font-size: 11px;
+    font-weight: 700;
+    margin-right: 8px;
+  }
+
+  .editable-cell {
+    position: relative;
+  }
+
+  .editable-cell input {
+    width: 72px;
+    padding: 4px 8px;
+    border: 1.5px solid var(--gray-200);
+    border-radius: 6px;
+    font-size: 14px;
+    text-align: right;
+    background: var(--gold-light);
+    color: var(--gray-800);
+    font-weight: 500;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  .editable-cell input:focus {
+    border-color: var(--blue);
+    box-shadow: 0 0 0 2px var(--blue-light);
+    background: white;
+  }
+
+  .editable-cell .suffix {
+    font-size: 12px;
+    color: var(--gray-400);
+    margin-left: 2px;
+  }
+
+  .calculated {
+    font-weight: 600;
+    color: var(--navy);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .protein-cost {
+    color: var(--blue);
+    font-weight: 600;
+  }
+
+  .total-cost {
+    color: var(--navy);
+    font-weight: 700;
+  }
+
+  .yield-impact {
+    font-size: 11px;
+    color: var(--red);
+    font-weight: 500;
+  }
+
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .summary-card {
+    background: white;
+    border-radius: 10px;
+    padding: 18px 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    text-align: center;
+  }
+
+  .summary-card.highlight {
+    background: linear-gradient(135deg, var(--green-light), #ecfdf5);
+    border: 2px solid var(--green);
+  }
+
+  .summary-card .label {
+    font-size: 12px;
+    color: var(--gray-400);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  .summary-card .value {
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--navy);
+  }
+
+  .summary-card.highlight .value { color: var(--green); }
+
+  .summary-card .detail {
+    font-size: 12px;
+    color: var(--gray-600);
+    margin-top: 2px;
+  }
+
+  .overall-yield-bar {
+    background: var(--gray-200);
+    height: 8px;
+    border-radius: 4px;
+    margin-top: 8px;
+    overflow: hidden;
+  }
+
+  .overall-yield-bar .fill {
+    height: 100%;
+    background: var(--blue);
+    border-radius: 4px;
+    transition: width 0.3s;
+  }
+
+  .species-panel { display: none; }
+  .species-panel.active { display: block; }
+
+  .step-name-cell {
+    display: flex;
+    align-items: center;
+  }
+
+  .badge {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-left: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+
+  .badge-input { background: var(--gold-light); color: #92400e; }
+  .badge-auto { background: var(--blue-light); color: var(--blue); }
+
+  .footer-note {
+    text-align: center;
+    padding: 24px;
+    color: var(--gray-400);
+    font-size: 12px;
+  }
+
+  .cost-note {
+    font-size: 11px;
+    color: var(--gray-400);
+    font-weight: 400;
+  }
+
+  @media print {
+    header, .tabs { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+    .editable-cell input { border: 1px solid var(--gray-300); background: var(--gold-light); }
+    body { background: white; }
+  }
+
+  @media (max-width: 768px) {
+    .container { padding: 12px; }
+    header { padding: 16px; }
+    .tabs { padding: 0 8px; }
+    .tab { padding: 10px 14px; font-size: 13px; }
+    table { font-size: 13px; }
+    th, td { padding: 8px 8px; }
+    .summary-grid { grid-template-columns: 1fr 1fr; }
+    .raw-material-input input { font-size: 22px; width: 110px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>Portioning Cost Calculator</h1>
+    <div class="subtitle">Alaska H&G → 4 oz Skin-Packed Portions &nbsp;|&nbsp; BSF Seafood, Jacksonville FL</div>
+  </div>
+  <div class="header-right">
+    All costs per lb of finished weight at each step<br>
+    All yields and costs are editable
+  </div>
+</header>
+
+<div class="tabs" id="tabs">
+  <div class="tab active" data-species="pink_salmon">Pink Salmon</div>
+  <div class="tab" data-species="pacific_cod">Pacific Cod</div>
+  <div class="tab" data-species="sablefish">Sablefish</div>
+  <div class="tab" data-species="sockeye">Sockeye Salmon</div>
+</div>
+
+<div class="container" id="app"></div>
+
+<div class="footer-note">
+  All fields highlighted in gold are editable — click to adjust. Calculations update in real time.<br>
+  Protein cost at each step = previous step total ÷ yield. Production cost is then added to arrive at step total.
+</div>
+
+<script>
+const SPECIES = {
+  pink_salmon: {
+    name: "Pink Salmon",
+    arrival: "H&G, Ungraded (2 lb+)",
+    finish: "Skin-On, Boneless",
+    defaultRaw: 2.25,
+    steps: [
+      { name: "Thaw",                             yield: 98,   cost: 0.10, note: "" },
+      { name: "Fillet & Pin Bone",                 yield: 61,   cost: 1.85, note: "Skin-on, 2 lb+ H&G" },
+      { name: "Portion (4 oz ± 0.5 oz)",           yield: 81,   cost: 0.35, note: "" },
+      { name: "Packing Labor",                     yield: 100,  cost: 0.17, note: "Batch into 8 oz trays (2 × 4 oz)" },
+      { name: "Forming Film (R275)",               yield: 100,  cost: 0.46, note: "$0.23/tray" },
+      { name: "Top Film (R275 10K)",               yield: 100,  cost: 0.20, note: "$0.10/tray" },
+      { name: "C-Label Wrap",                      yield: 100,  cost: 0.19, note: "$0.095/label" },
+      { name: "Master Carton (4 trays)",           yield: 100,  cost: 0.335, note: "$0.67/carton — 4 trays = 2 lbs net" },
+      { name: "Palletize & Ship Frozen",           yield: 100,  cost: 0.034, note: "$17/pallet @ 500 lbs" },
+    ]
+  },
+  pacific_cod: {
+    name: "Pacific Cod",
+    arrival: "H&G, Collar Bone Off (4 lb+)",
+    finish: "Skinless, Boneless",
+    defaultRaw: 4.30,
+    steps: [
+      { name: "Thaw",                             yield: 97,   cost: 0.10, note: "" },
+      { name: "Fillet, Skin & Pin Bone",           yield: 49,   cost: 1.65, note: "Skinless — 49% yield collar off; 36% collar on" },
+      { name: "Portion (4 oz ± 0.5 oz)",           yield: 78,   cost: 0.35, note: "⚠ Drops to ~65-69% with raw material under 4 lbs" },
+      { name: "Packing Labor",                     yield: 100,  cost: 0.17, note: "Batch into 8 oz trays (2 × 4 oz)" },
+      { name: "Forming Film (R275)",               yield: 100,  cost: 0.46, note: "$0.23/tray" },
+      { name: "Top Film (R275 10K)",               yield: 100,  cost: 0.20, note: "$0.10/tray" },
+      { name: "C-Label Wrap",                      yield: 100,  cost: 0.19, note: "$0.095/label" },
+      { name: "Master Carton (4 trays)",           yield: 100,  cost: 0.335, note: "$0.67/carton — 4 trays = 2 lbs net" },
+      { name: "Palletize & Ship Frozen",           yield: 100,  cost: 0.034, note: "$17/pallet @ 500 lbs" },
+    ]
+  },
+  sablefish: {
+    name: "Sablefish",
+    arrival: "H&G, Collar Bone Off (J-Cut, 4-5 lb)",
+    finish: "Skin-On, Boneless",
+    defaultRaw: 4.63,
+    steps: [
+      { name: "Thaw",                             yield: 98,   cost: 0.10, note: "" },
+      { name: "Fillet & V-Cut Pin Bone",           yield: 63.5, cost: 1.40, note: "Skin-on" },
+      { name: "Portion (4 oz ± 0.5 oz)",           yield: 86,   cost: 0.35, note: "" },
+      { name: "Packing Labor",                     yield: 100,  cost: 0.17, note: "Batch into 8 oz trays (2 × 4 oz)" },
+      { name: "Forming Film (R275)",               yield: 100,  cost: 0.46, note: "$0.23/tray" },
+      { name: "Top Film (R275 10K)",               yield: 100,  cost: 0.20, note: "$0.10/tray" },
+      { name: "C-Label Wrap",                      yield: 100,  cost: 0.19, note: "$0.095/label" },
+      { name: "Master Carton (4 trays)",           yield: 100,  cost: 0.335, note: "$0.67/carton — 4 trays = 2 lbs net" },
+      { name: "Palletize & Ship Frozen",           yield: 100,  cost: 0.034, note: "$17/pallet @ 500 lbs" },
+    ]
+  },
+  sockeye: {
+    name: "Sockeye Salmon",
+    arrival: "H&G (2 lb+)",
+    finish: "Skin-On, Boneless",
+    defaultRaw: 5.45,
+    steps: [
+      { name: "Thaw",                             yield: 98,   cost: 0.10, note: "" },
+      { name: "Fillet & Pin Bone",                 yield: 65,   cost: 1.45, note: "Skin-on, 2 lb+ H&G" },
+      { name: "Portion (4 oz ± 0.5 oz)",           yield: 83,   cost: 0.35, note: "" },
+      { name: "Packing Labor",                     yield: 100,  cost: 0.17, note: "Batch into 8 oz trays (2 × 4 oz)" },
+      { name: "Forming Film (R275)",               yield: 100,  cost: 0.46, note: "$0.23/tray" },
+      { name: "Top Film (R275 10K)",               yield: 100,  cost: 0.20, note: "$0.10/tray" },
+      { name: "C-Label Wrap",                      yield: 100,  cost: 0.19, note: "$0.095/label" },
+      { name: "Master Carton (4 trays)",           yield: 100,  cost: 0.335, note: "$0.67/carton — 4 trays = 2 lbs net" },
+      { name: "Palletize & Ship Frozen",           yield: 100,  cost: 0.034, note: "$17/pallet @ 500 lbs" },
+    ]
+  }
+};
+
+function fmt(v) { return '$' + v.toFixed(2); }
+function fmt3(v) { return '$' + v.toFixed(3); }
+function pct(v) { return v.toFixed(1) + '%'; }
+
+function buildPanel(key, sp) {
+  const id = key;
+  let html = `<div class="species-panel${key === 'pink_salmon' ? ' active' : ''}" id="panel-${id}">`;
+
+  html += `
+    <div class="species-header">
+      <div>
+        <h2>${sp.name}</h2>
+      </div>
+      <div class="spec">
+        <span><span class="label">Arrives:</span> ${sp.arrival}</span>
+        <span><span class="label">Finished:</span> ${sp.finish}</span>
+        <span><span class="label">Pack:</span> 4 oz portions → 8 oz trays → 4-pack master carton</span>
+      </div>
+    </div>
+  `;
+
+  html += `
+    <div class="raw-material-card">
+      <h3>
+        Step 0 — Raw Material Cost
+        <span class="badge badge-input">Customer Input</span>
+      </h3>
+      <div class="note">H&G protein cost, fully burdened, delivered Jacksonville FL. This is your all-in landed cost before any processing.</div>
+      <div class="raw-material-input">
+        <span class="dollar">$</span>
+        <input type="text" inputmode="decimal" value="${sp.defaultRaw.toFixed(2)}" id="raw-${id}" oninput="recalc('${id}')" onblur="formatRaw('${id}')">
+        <span class="unit">per lb</span>
+      </div>
+    </div>
+  `;
+
+  html += `
+    <div class="summary-grid" id="summary-${id}">
+      <div class="summary-card highlight">
+        <div class="label">Finished Goods Cost</div>
+        <div class="value" id="fg-cost-${id}">—</div>
+        <div class="detail">per lb</div>
+      </div>
+      <div class="summary-card">
+        <div class="label">Cost per 8 oz Tray</div>
+        <div class="value" id="tray-cost-${id}">—</div>
+        <div class="detail">2 portions × 4 oz</div>
+      </div>
+      <div class="summary-card">
+        <div class="label">Cost per Master Carton</div>
+        <div class="value" id="carton-cost-${id}">—</div>
+        <div class="detail">4 trays = 2 lbs net</div>
+      </div>
+      <div class="summary-card">
+        <div class="label">Overall Yield (H&G → Portion)</div>
+        <div class="value" id="overall-yield-${id}">—</div>
+        <div class="overall-yield-bar"><div class="fill" id="yield-bar-${id}"></div></div>
+      </div>
+    </div>
+  `;
+
+  html += `
+    <div class="table-card">
+      <h3>Step-by-Step Cost Cascade</h3>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:30%">Processing Step</th>
+            <th class="center" style="width:11%">Yield %</th>
+            <th class="right" style="width:14%">Protein Cost In</th>
+            <th class="right" style="width:14%">Protein Cost Out</th>
+            <th class="center" style="width:14%">Production Cost</th>
+            <th class="right" style="width:14%">Step Total $/lb</th>
+          </tr>
+        </thead>
+        <tbody id="tbody-${id}">
+  `;
+
+  sp.steps.forEach((step, i) => {
+    const yieldId = `yield-${id}-${i}`;
+    const costId = `cost-${id}-${i}`;
+    const hasNote = step.note ? ` <span class="cost-note">${step.note}</span>` : '';
+
+    html += `
+      <tr class="step-row">
+        <td>
+          <div class="step-name-cell">
+            <span class="step-num">${i + 1}</span>
+            ${step.name}${hasNote}
+          </div>
+        </td>
+        <td class="center editable-cell">
+          <input type="number" step="0.1" min="0" max="100" value="${step.yield}" id="${yieldId}" oninput="recalc('${id}')"><span class="suffix">%</span>
+        </td>
+        <td class="right calculated protein-cost" id="pin-${id}-${i}">—</td>
+        <td class="right calculated protein-cost" id="pout-${id}-${i}">—</td>
+        <td class="center editable-cell">
+          $<input type="number" step="0.01" min="0" value="${step.cost.toFixed(2)}" id="${costId}" oninput="recalc('${id}')">
+        </td>
+        <td class="right calculated total-cost" id="total-${id}-${i}">—</td>
+      </tr>
+    `;
+  });
+
+  html += `
+        </tbody>
+      </table>
+    </div>
+  </div>`;
+
+  return html;
+}
+
+function formatRaw(id) {
+  const el = document.getElementById(`raw-${id}`);
+  const v = parseFloat(el.value);
+  if (!isNaN(v)) el.value = v.toFixed(2);
+}
+
+function recalc(id) {
+  const sp = SPECIES[id];
+  const rawInput = document.getElementById(`raw-${id}`);
+  const rawCost = parseFloat(rawInput.value) || 0;
+
+  let prevTotal = rawCost;
+  let overallYield = 1;
+  let yieldStopsAt = -1;
+
+  sp.steps.forEach((step, i) => {
+    const yieldVal = parseFloat(document.getElementById(`yield-${id}-${i}`).value) || 100;
+    const prodCost = parseFloat(document.getElementById(`cost-${id}-${i}`).value) || 0;
+
+    const yieldFrac = yieldVal / 100;
+    const proteinIn = prevTotal;
+    const proteinOut = yieldFrac > 0 ? proteinIn / yieldFrac : 0;
+    const stepTotal = proteinOut + prodCost;
+
+    if (yieldVal < 100 && yieldStopsAt < 0) {
+      // track which steps have yield loss for the overall calc
+    }
+    if (yieldVal < 100) {
+      overallYield *= yieldFrac;
+    }
+
+    document.getElementById(`pin-${id}-${i}`).textContent = fmt3(proteinIn);
+    document.getElementById(`pout-${id}-${i}`).textContent = fmt3(proteinOut);
+    document.getElementById(`total-${id}-${i}`).textContent = fmt3(stepTotal);
+
+    prevTotal = stepTotal;
+  });
+
+  const fgCost = prevTotal;
+  const trayCost = fgCost * 0.5;
+  const cartonCost = trayCost * 4;
+
+  document.getElementById(`fg-cost-${id}`).textContent = fmt(fgCost);
+  document.getElementById(`tray-cost-${id}`).textContent = fmt(trayCost);
+  document.getElementById(`carton-cost-${id}`).textContent = fmt(cartonCost);
+  document.getElementById(`overall-yield-${id}`).textContent = pct(overallYield * 100);
+  document.getElementById(`yield-bar-${id}`).style.width = (overallYield * 100) + '%';
+}
+
+// Build all panels
+const app = document.getElementById('app');
+let allHtml = '';
+for (const [key, sp] of Object.entries(SPECIES)) {
+  allHtml += buildPanel(key, sp);
+}
+app.innerHTML = allHtml;
+
+// Tab switching
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.species-panel').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('panel-' + tab.dataset.species).classList.add('active');
+  });
+});
+
+// Initial calc for all species
+for (const key of Object.keys(SPECIES)) {
+  recalc(key);
+}
+</script>
+
+</body>
+</html>
